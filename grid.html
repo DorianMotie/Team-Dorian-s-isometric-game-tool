@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ZIM - Tile Map Prototype</title>
+
+<!-- zimjs.com - JavaScript Canvas Framework -->
+<script type="module">
+
+import zim from "https://zimjs.org/cdn/019/zim";
+
+new Frame(FIT, 1024, 768, light, dark, ready);
+function ready() {
+
+	const bar = new Rectangle(W,40,black).addTo();
+	F.makeIcon({box:black}).scaleTo(bar,80,80).loc(10,3);
+	new Label("Isometric Grid Game Tool", 50, "Changa", yellow).pos(0,3,CENTER,CENTER,bar);
+
+	const board = new Tile(new Rectangle(100,100,purple,null,null,10).reg(CENTER), 5,5,5,5).center().mov(0,40);
+		
+}
+
+</script>
+<meta name="viewport" content="width=device-width" />
+</head>
+<body></body>
+</html>
