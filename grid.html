@@ -7,17 +7,106 @@
 <!-- zimjs.com - JavaScript Canvas Framework -->
 <script type="module">
 
-import zim from "https://zimjs.org/cdn/019/zim";
+import "https://zimjs.org/cdn/019/zim";
+import "https://zimjs.org/cdn/019/zim_game";
+import "https://zimjs.org/cdn/019/zim_pizzazz";
 
-new Frame(FIT, 1024, 768, light, dark, ready);
+const assets = [
+	"dirtFarmland_W.png",
+	"fenceHighBroken_N.png",
+	"fenceLow_S.png",
+	"fenceLow_W.png",
+	"fenceLowBroken_E.png"
+];
+const path = "assets/Isometric Miniature Farm/Isometric";
+
+new Frame(FIT, 1024, 768, light, dark, ready, assets, path);
 function ready() {
 
 	const bar = new Rectangle(W,40,black).addTo();
 	F.makeIcon({box:black}).scaleTo(bar,80,80).loc(10,3);
 	new Label("Isometric Grid Game Tool", 50, "Changa", yellow).pos(0,3,CENTER,CENTER,bar);
 
-	const board = new Tile(new Rectangle(100,100,purple,null,null,10).reg(CENTER), 5,5,5,5).center().mov(0,40);
-		
+	// Tiled Board
+	// const board = new Tile(new Rectangle(100,100,purple,null,null,10).reg(CENTER), 5,5,5,5).center().mov(0,40);
+
+	const board = new Board({
+		size: 65,
+		cols: 5,
+		rows: 5
+	}).center().mov(0,120);
+
+	const garbage = makeIcon("garbage",purple).reg(CENTER).sca(1.5).pos(20,20,RIGHT,BOT);
+	
+	// List of draggable items
+	const c = new Container(W,H).addTo().drag({
+		dropTargets:copy(board.tiles.items),
+		dropHitTest:"reg",
+		dropEnd:false,
+		dropWidth:100 
+	});
+	c.on("mousedown", (e)=>{
+		c.top();		
+	});
+	c.on("pressup", (e)=>{
+		if (e.target.dropTarget == garbage) {
+			garbage.dropFull = false;
+			e.target.dispose();
+			S.update()
+		} else if (e.target.dropTarget) {
+			if (e.target.tile) e.target.tile.item = null;
+			e.target.tile = e.target.dropTarget;
+		}
+	});
+	c.dropTargets.push(garbage);
+
+	const items = [];
+	loop(assets.length, i=>{
+		const file = assets[i];
+
+		const box = new Container(100,100).reg(CENTER);
+		new Rectangle(100,100,white,darker,2,10).addTo(box);
+
+		const pic = new Pic(file)
+			.addTo(box)
+			.scaleTo(box, 80, 80)
+			.center(box);
+
+		box.mouseChildren = false;
+		items.push(box);
+	});
+
+	const list = new List({
+		backdropColor:white,
+		paddingH:5,
+		valign:TOP,
+		indent:2,
+		width:W,
+		height:100,
+		viewNum:12.5,
+		list:items,
+		dropCopy:true,
+		vertical:false,
+		dropWidth:100,
+		dropTargets:board.tiles.items,
+		dropHitTest:"reg",
+		dropEnd:false
+	}).loc(0,40);
+
+	list.on("dropdown", ()=>{
+		// remember the sprite frame based on the original box 
+		// which is stored in the List as content at the dropIndex
+		list.dropItem.frame = list.items[list.dropIndex].content.frame
+	})	
+
+	// if we want to drag and drop after taking out of List then add it to the container c 
+	// but careful only to add it if we drop on one of the targets of c
+	list.on("dropup", ()=>{	
+		if (list.dropTarget) { 
+			list.dropItem.addTo(c);	
+			list.dropItem.tile = list.dropTarget; // store which tile item was dropped on
+		}
+	});
 }
 
 </script>
