@@ -12,13 +12,10 @@ import "https://zimjs.org/cdn/019/zim_game";
 import "https://zimjs.org/cdn/019/zim_pizzazz";
 
 const assets = [
-	"dirtFarmland_W.png",
-	"fenceHighBroken_N.png",
-	"fenceLow_S.png",
-	"fenceLow_W.png",
-	"fenceLowBroken_E.png"
+	"landscapeTiles_sheet.png",
+	"landscapeTiles_sheet.xml"
 ];
-const path = "assets/Isometric Miniature Farm/Isometric";
+const path = "assets/";
 
 new Frame(FIT, 1024, 768, light, dark, ready, assets, path);
 function ready() {
@@ -61,17 +58,13 @@ function ready() {
 	c.dropTargets.push(garbage);
 
 	const items = [];
-	loop(assets.length, i=>{
-		const file = assets[i];
-
+	loop(4*32, i=>{
 		const box = new Container(100,100).reg(CENTER);
 		new Rectangle(100,100,white,darker,2,10).addTo(box);
 
-		const pic = new Pic(file)
-			.addTo(box)
-			.scaleTo(box, 80, 80)
-			.center(box);
+		const sprite = new Sprite("landscapeTiles_sheet.png", 4, 32).siz(null,100).run({frame:i}).center(box);
 
+		box.frame = i;
 		box.mouseChildren = false;
 		items.push(box);
 	});
@@ -94,9 +87,23 @@ function ready() {
 	}).loc(0,40);
 
 	list.on("dropdown", ()=>{
-		// remember the sprite frame based on the original box 
-		// which is stored in the List as content at the dropIndex
-		list.dropItem.frame = list.items[list.dropIndex].content.frame
+		const frame = list.items[list.dropIndex].content.frame;
+
+		// clear the copied preview box
+		list.dropItem.removeAllChildren();
+
+		// a copy for drag and drop
+		const sprite = new Sprite("landscapeTiles_sheet.png", 4, 32)
+			.run({frame: frame})
+			.addTo(list.dropItem);
+
+		// item scaling
+		sprite.sca(1.37);
+
+		sprite.centerReg(list.dropItem);
+
+		list.dropItem.frame = frame;
+		list.dropItem.mouseChildren = false;
 	})	
 
 	// if we want to drag and drop after taking out of List then add it to the container c 
@@ -105,6 +112,8 @@ function ready() {
 		if (list.dropTarget) { 
 			list.dropItem.addTo(c);	
 			list.dropItem.tile = list.dropTarget; // store which tile item was dropped on
+			const b = list.dropItem.getBounds();
+			list.dropItem.reg(b.width / 2, b.height / 1.4);
 		}
 	});
 }
