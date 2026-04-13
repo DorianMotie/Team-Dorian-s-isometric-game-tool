@@ -24,19 +24,105 @@ function ready() {
 	F.makeIcon({box:black}).scaleTo(bar,80,80).loc(10,3);
 	new Label("Isometric Grid Game Tool", 50, "Changa", yellow).pos(0,3,CENTER,CENTER,bar);
 
+	const options = {
+		"BOARD SIZE": ["1x1", "2x2", "3x3", "4x4", "5x5"]
+	};
+	const boardSize = new List({
+		list: {
+			menu:options, 
+			shade: true,
+			dim: true,
+			shift: true,
+			bloom: true,
+			whither: true,
+			subStyles: [
+      {
+         backgroundColor: red,
+         color: white,
+         rollBackgroundColor: purple,
+         rollColor: white,
+         selectedBackgroundColor: white,
+         selectedColor: red,
+         selectedRollBackgroundColor: purple,
+         selectedRollColor: white
+      }, {
+         backgroundColor: blue,
+         color: white,
+         rollBackgroundColor: pink,
+         rollColor: white,
+         selectedBackgroundColor: black,
+         selectedColor: white,
+         selectedRollBackgroundColor: pink,
+         selectedRollColor: white
+      }, {
+         backgroundColor: green,
+         color: white,
+         rollBackgroundColor: brown,
+         rollColor: white,
+         selectedBackgroundColor: black,
+         selectedColor: white,
+         selectedRollBackgroundColor: white,
+         selectedRollColor: black
+      }
+   ]
+		},
+		pulldown:true,
+		pulldownToggle:true,
+		currentSelected:false,
+		width:200,
+		shadowBlur:-1
+	})
+		.loc(20,155);
+
 	// Tiled Board
 	// const board = new Tile(new Rectangle(100,100,purple,null,null,10).reg(CENTER), 5,5,5,5).center().mov(0,40);
 
-	const board = new Board({
-		size: 65,
-		cols: 5,
-		rows: 5
-	}).center().mov(0,120);
+	let board;
+	let c;
+	let list;
+	let garbage;
 
-	const garbage = makeIcon("garbage",purple).reg(CENTER).sca(1.5).pos(20,20,RIGHT,BOT);
+	function makeBoard(cols, rows) {
+		if (board) board.removeFrom();
+		if (c) c.removeAllChildren();
+
+		board = new Board({
+			size:65,
+			cols:cols,
+			rows:rows
+		})
+			.center()
+			.mov(0,120);
+
+		if (c) {
+			c.dropTargets = copy(board.tiles.items);
+			c.dropTargets.push(garbage);
+			c.top();
+		}
+
+		if (list) {
+			list.dropTargets = board.tiles.items;
+			list.updateDrop();
+		}
+		
+		S.update();
+	}
+
+	makeBoard(5, 5);
+
+	boardSize.on("change", () => {
+		const selected = boardSize.value;
+		const parts = selected.split("x");
+		const cols = Number(parts[0]);
+		const rows = Number(parts[1]);
+
+		makeBoard(cols, rows);
+	});
+
+	 garbage = makeIcon("garbage",purple).reg(CENTER).sca(1.5).pos(20,20,RIGHT,BOT);
 	
 	// List of draggable items
-	const c = new Container(W,H).addTo().drag({
+	c = new Container(W,H).addTo().drag({
 		dropTargets:copy(board.tiles.items),
 		dropHitTest:"reg",
 		dropEnd:false,
@@ -69,7 +155,7 @@ function ready() {
 		items.push(box);
 	});
 
-	const list = new List({
+	list = new List({
 		backdropColor:white,
 		paddingH:5,
 		valign:TOP,
