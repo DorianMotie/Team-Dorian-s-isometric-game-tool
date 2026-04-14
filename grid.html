@@ -13,16 +13,25 @@ import "https://zimjs.org/cdn/019/zim_pizzazz";
 
 const assets = [
 	"landscapeTiles_sheet.png",
-	"landscapeTiles_sheet.xml"
+	"landscapeTiles_sheet.xml",
+	"gf_Bitcount Grid Double",
+	"watercolor.jpg"
 ];
 const path = "assets/";
 
 new Frame(FIT, 1024, 768, light, dark, ready, assets, path);
 function ready() {
 
+	// Background
+	new Pic("watercolor.jpg")
+		.scaleTo()
+		.center()
+		.alp(.4)
+		.noMouse();
+
 	const bar = new Rectangle(W,40,black).addTo();
 	F.makeIcon({box:black}).scaleTo(bar,80,80).loc(10,3);
-	new Label("Isometric Grid Game Tool", 50, "Changa", yellow).pos(0,3,CENTER,CENTER,bar);
+	new Label("Isometric Grid Game Tool", 50, "Bitcount Grid Double", yellow).pos(0,3,CENTER,CENTER,bar);
 
 	const options = {
 		"BOARD SIZE": ["1x1", "2x2", "3x3", "4x4", "5x5"]
@@ -202,6 +211,42 @@ function ready() {
 			list.dropItem.reg(b.width / 2, b.height / 1.4);
 		}
 	});
+
+	// Clear Button
+	const clear = new Button({
+		label:"CLEAR",
+		wait:"CONFIRM", 
+		waitBackgroundColor:yellow,
+		waitColor:black,
+		rollWaitBackgroundColor:yellow,
+		rollWaitColor:black,
+		downColor:black
+	})
+	clear.on("mousedown", ()=>{
+		if (clear.waiting) {
+			// Clear item references from dropped objects
+			c.loop(child => {
+				if (child.tile) {
+					child.tile.dropFull = false;
+					child.tile.item = null;
+					child.tile = null;
+				}
+			});
+
+			// Reset every tile on the board
+			loop(board.tiles.items, tile => {
+				tile.dropFull = false;
+				tile.item = null;
+			});
+
+			c.removeAllChildren();
+			clear.clearWait();
+			S.update();
+		}
+	});
+
+	// Buttons
+	new Tile([clear], 3, 1, 40, 0, true).sca(.5).pos(30,25,LEFT,BOT);
 }
 
 </script>
