@@ -245,8 +245,78 @@ function ready() {
 		}
 	});
 
+	// Save Button
+	const textArea = new TextArea({width:400, height:400, borderColor:white, borderWidth:5});
+	const pane = new Pane({width:500, height:500, content:textArea, close:true});
+	textArea.mov(0,-20)
+	const copyBut = new Button({label:"COPY"})
+		.sca(.5)
+		.pos(0,20,CENTER,BOTTOM,pane.contentContainer)
+		.tap(()=>{
+			copyTextToClipboard(textArea.text);
+			textArea.background.borderColor = green;
+			S.update()
+			timeout(.5,()=>{
+				textArea.background.borderColor = white;
+				S.update()
+			});			
+		});
+	
+	const save = new Button({label:"SAVE"}).tap(()=>{
+		const data = {};
+		c.loop(item=>{
+			// could also get tileCol and tileRow if needed
+			// will want to match data of game Board()
+			if (item.tile) data["tile_"+item.tile.tileNum] = "frame_"+item.frame;
+		})
+		// zogr(JSON.stringify(data));
+		textArea.text = JSON.stringify(data)
+		pane.show();
+		
+	})
+
 	// Buttons
-	new Tile([clear], 3, 1, 40, 0, true).sca(.5).pos(30,25,LEFT,BOT);
+	new Tile([clear, save], 3, 1, 40, 0, true).sca(.5).pos(30,25,LEFT,BOT);
+
+	// CLIPBOARD CODE
+	async function copyTextToClipboard(text) {
+		try {
+			await navigator.clipboard.writeText(text);			
+		} catch (err) {
+			fallbackCopyTextToClipboard(text);
+		}
+	}
+	function fallbackCopyTextToClipboard(codeText) {
+		const ta = document.createElement('textarea');
+		ta.value = codeText;
+
+		// Make the textarea non-visible but part of the DOM
+		ta.style.position = 'fixed';
+		ta.style.top = 0;
+		ta.style.left = 0;
+		ta.style.width = '1px';
+		ta.style.height = '1px';
+		ta.style.padding = 0;
+		ta.style.border = 'none';
+		ta.style.outline = 'none';
+		ta.style.boxShadow = 'none';
+		ta.style.background = 'transparent';
+
+		document.body.appendChild(ta);
+		ta.select();
+
+		// For iOS, you may need to adjust selection range manually
+		ta.setSelectionRange(0, 999999); /* For mobile devices */
+
+		try {
+			var successful = document.execCommand('copy');
+		} catch (err) {
+			console.error('could not copy', err);
+		}
+
+		document.body.removeChild(ta);
+	}
+	// END CLIPBOARD CODE
 }
 
 </script>
